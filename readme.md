@@ -38,9 +38,9 @@ Include:
 
 ## to do
 
+- add tests! (will make it easier for below)
 - use cli framework
 - fix using a dot as project/dir name
-- add tests! (will make it easier for below)
 - make it so you can do the following `create-node-project { directory | project-name }` with:
   - subdirectory that matches project-name
   - `.`, setting project-name to that of parent dir
@@ -50,3 +50,10 @@ Include:
 - add support for errors:
   - github repo already exists -> create new name?
 - add option for use `code` or `code-insiders` or `open` folder
+
+## Dependencies
+
+- **jest** for testing
+- **typescript**
+- **babel** so can use jest with typescript
+- **edit-json-file** for editing `package.json`

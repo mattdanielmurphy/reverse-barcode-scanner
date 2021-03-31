@@ -134,7 +134,7 @@ async function createProject(projectName: string) {
 		},
 		{
 			message: 'Opening project folder in Visual Studio Code',
-			command: 'code-insiders .',
+			command: 'open . -a Visual\\ Studio\\ Code\\ -\\ Insiders',
 		},
 	]
 

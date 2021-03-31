@@ -29,6 +29,10 @@
 		],
 		"root": true
 	},
+	"jest": {
+		"preset": "ts-jest",
+		"testEnvironment": "node"
+	},
 	"eslintIgnore": [
 		"node_modules",
 		"node_modules.nosync",

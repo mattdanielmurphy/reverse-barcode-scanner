@@ -22,7 +22,8 @@ else
 // * FUNCTIONS
 
 interface Options {
-	[key: string]: unknown
+	cwd?: string
+	verboseMode?: boolean
 }
 
 async function executeShellCommand(command: string, options: Options = {}) {

@@ -1,8 +1,14 @@
+//
+// * IMPORTS
+
 import editJsonFile = require('edit-json-file')
 
 import * as path from 'path'
 
 import { exec } from 'child_process'
+
+//
+// * PROGRAM
 
 const projectName = process.argv.slice(2).join('-')
 
@@ -12,9 +18,8 @@ else
 		'Please provide a project name:\n\tcreate-node-project [directory] [project-name]',
 	)
 
-// * - - - - - - - - - - - - - - - -
+//
 // * FUNCTIONS
-// * - - - - - - - - - - - - - - - -
 
 interface Options {
 	[key: string]: unknown

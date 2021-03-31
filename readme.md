@@ -38,6 +38,7 @@ Include:
 
 ## to do
 
+- make fallback to `open -a Visual Studio Code` if no insiders edition/preference for that is disabled
 - add tests! (will make it easier for below)
 - use cli framework
 - fix using a dot as project/dir name

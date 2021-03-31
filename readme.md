@@ -53,7 +53,7 @@ Include:
 
 ## Dependencies
 
-- **jest** for testing
+- **prettier** for formatting (+ **prettier-plugin-packagejson** to sort package.json)
 - **typescript**
-- **babel** so can use jest with typescript
-- **edit-json-file** for editing `package.json`
+- **jest** for testing (+ **ts-jest** for typescript support)
+- **edit-json-file** for editing generated `package.json`

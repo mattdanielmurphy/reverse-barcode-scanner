@@ -91,11 +91,6 @@ async function createProject(projectName: string) {
 		}
 	}
 
-	function getRemoveInstallerFilesCommand() {
-		const installerFiles = ['src']
-		return `rm -r ${installerFiles.join(' ')}`
-	}
-
 	const commands = [
 		{
 			message: `Cloning repo into folder '${projectName}'`,
@@ -104,7 +99,7 @@ async function createProject(projectName: string) {
 		},
 		{
 			message: 'Removing installer files',
-			command: getRemoveInstallerFilesCommand(),
+			command: 'rm -r src',
 		},
 		{
 			message: 'Updating package.json',

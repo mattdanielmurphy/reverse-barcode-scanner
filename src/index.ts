@@ -25,9 +25,7 @@ interface Options {
 	[key: string]: unknown
 }
 
-async function shellCommand(command: string, options?: Options) {
-	options = options || {}
-
+async function executeShellCommand(command: string, options: Options = {}) {
 	let verboseMode: boolean
 	if (options.verboseMode) {
 		delete options.verboseMode
@@ -57,7 +55,7 @@ async function shellCommand(command: string, options?: Options) {
 async function createProject(projectName: string) {
 	const workingDirectory = path.resolve(__dirname, '../..')
 	const projectDirectory = path.resolve(workingDirectory, projectName)
-	async function executeShellCommands(
+	async function executeListOfShellCommands(
 		commands: {
 			message: string
 			command?: string
@@ -84,7 +82,7 @@ async function createProject(projectName: string) {
 					lastCommandFailed = true
 				}
 			} else {
-				await shellCommand(command || '', {
+				await executeShellCommand(command || '', {
 					cwd: projectDirectory,
 					...options,
 				}).catch(() => (lastCommandFailed = true))
@@ -145,5 +143,5 @@ async function createProject(projectName: string) {
 	]
 
 	console.log('All done!')
-	executeShellCommands(commands)
+	executeListOfShellCommands(commands)
 }

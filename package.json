@@ -4,10 +4,10 @@
 	"repository": "git@github.com:mattdanielmurphy/create-node-project.git",
 	"license": "MIT",
 	"author": "Matthew Daniel Murphy <matt@mattmurphy.ca>",
-	"main": "index.js",
-	"bin": "index.js",
+	"main": "index.mjs",
+	"bin": "index.mjs",
 	"scripts": {
-		"dev": "cd ~/Projects; rm -rf test-create-node-project; create-node-project test-create-node-project",
+		"man-test": "cd ~/Projects; rm -rf test-create-node-project; tsc --p 'Create Node Project'; create-node-project test-create-node-project",
 		"lint": "eslint . --ext .ts"
 	},
 	"prettier": {

@@ -9,11 +9,14 @@ import { exec } from 'child_process'
 interface ShellCommandOptions {
 	cwd?: string
 	verboseMode?: boolean
+	skipInDevelopment?: boolean
 }
 
 export class Project {
 	projectDirectory: string
-	constructor(projectName: string) {
+	developmentMode: boolean
+	constructor(projectName: string, developmentMode = false) {
+		this.developmentMode = developmentMode
 		const workingDirectory = path.resolve(__dirname, '../..')
 		this.projectDirectory = path.resolve(workingDirectory, projectName)
 
@@ -38,11 +41,13 @@ export class Project {
 			{
 				message: 'Creating GitHub repo',
 				command: `git remote remove origin; gh repo create ${projectName} -y --public`,
+				options: { skipInDevelopment: true },
 			},
 			{
 				message: 'Pushing first commit',
 				command:
 					'git add .; git commit -m "initial commit"; git push -u origin main',
+				options: { skipInDevelopment: true },
 			},
 			{
 				message: 'Installing packages',
@@ -102,6 +107,10 @@ export class Project {
 		command: string,
 		options: ShellCommandOptions = {},
 	): Promise<string | Buffer> {
+		if (options.skipInDevelopment && this.developmentMode) {
+			console.log('(skipped in development)')
+			return 'skipped in development'
+		}
 		let verboseMode: boolean
 		if (options.verboseMode) {
 			delete options.verboseMode

@@ -1,8 +1,8 @@
 import { ShellCommandOptions } from '.'
 
 export interface Command {
-	message: string
-	command?: string
+	description: string
+	commandString?: string
 	fn?: () => void
 	options?: ShellCommandOptions
 }

@@ -5,7 +5,7 @@ import { Project } from './Project'
 
 function getProjectNameFromParameters(): string {
 	// $ create-node-project [name of project with spaces]
-	const projectName = process.argv.slice(2).join('-') // name-of-project-with-spaces
+	const projectName = process.argv.slice(2).join(' ') // name-of-project-with-spaces
 
 	if (projectName) {
 		return projectName

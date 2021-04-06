@@ -12,78 +12,105 @@ export class Project {
 	projectDirectory: string
 	developmentMode: boolean
 	commands: Command[]
+	projectName: string
 
 	executeShellCommand: (
 		command: string,
 		options?: ShellCommandOptions,
 	) => Promise<string | Buffer>
 
+	getCommandsArrayFromString(commandsString: string) {
+		const commands: Command[] = []
+		commandsString.split(/\n\s*#/).forEach((command) => {
+			if (!command) return
+			const commandParameters: Command = { description: '' }
+			command.split('\n').forEach((parameter, i) => {
+				parameter = parameter.trim()
+				if (i === 0) commandParameters.description = parameter
+				if (i === 1) {
+					if (parameter.substr(0, 2) === '()') {
+						commandParameters.fn = eval(parameter)
+					} else commandParameters.commandString = parameter
+				}
+				if (i === 2) {
+					const [key, value] = parameter.split(' ')
+					if (key === '--cwd') commandParameters.options = { cwd: value }
+					else if (key === '--skipInDevelopment')
+						commandParameters.options = { skipInDevelopment: true }
+				}
+			})
+			commands.push(commandParameters)
+		})
+		return commands
+	}
+
+	prettifyName(string: string) {
+		return string
+			.split('-')
+			.map((l) => l.substr(0, 1).toUpperCase() + l.substring(1))
+			.join(' ')
+	}
+
 	constructor(projectName: string, developmentMode = false) {
+		projectName = projectName.replace(' ', '-')
 		const workingDirectory = path.resolve(__dirname, '../..')
 		this.developmentMode = developmentMode
+		this.projectName = projectName
 		this.projectDirectory = path.resolve(workingDirectory, projectName)
 		const shell = new Shell(this.projectDirectory, {
 			developmentMode,
 		})
 		this.executeShellCommand = shell.executeShellCommand
 
-		this.commands = [
-			{
-				message: `Cloning repo into folder '${projectName}'`,
-				command: `gh repo clone mattdanielmurphy/create-node-project ${projectName}`,
-				options: { cwd: workingDirectory },
-			},
-			{
-				message: 'Removing installer files',
-				command: 'rm -r src',
-			},
-			{
-				message: 'Updating package.json',
-				fn: () => this.updatePackageJSON(projectName),
-			},
-			{
-				message: 'Updating readme',
-				command: `echo "# ${projectName}" > readme.md`,
-			},
-			{
-				message: 'Creating GitHub repo',
-				command: `git remote remove origin; gh repo create ${projectName} -y --public`,
-				options: { skipInDevelopment: true },
-			},
-			{
-				message: 'Pushing first commit',
-				command:
-					'git add .; git commit -m "initial commit"; git push -u origin main',
-				options: { skipInDevelopment: true },
-			},
-			{
-				message: 'Installing packages',
-				command:
-					'mkdir node_modules.nosync; ln -s node_modules.nosync node_modules; yarn',
-			},
-			{
-				message: 'Opening project folder in Visual Studio Code',
-				command: 'open . -a Visual\\ Studio\\ Code\\ -\\ Insiders',
-				options: { skipInDevelopment: true },
-			},
-		]
+		const commandsString = `# Cloning repo into folder '${projectName}'
+		gh repo clone mattdanielmurphy/create-node-project ${projectName}
+		--cwd ${workingDirectory}
+
+		# Removing installer files
+		rm -r src
+
+		# Updating package.json
+		() => this.updatePackageJSON()
+
+		# Updating readme
+		echo "# ${this.prettifyName(projectName)}" > readme.md
+
+		# Creating GitHub repo
+		git remote remove origin; gh repo create ${projectName} -y --public
+		--skipInDevelopment
+
+		# Pushing first commit
+		git add .; git commit -m "initial commit"; git push -u origin main
+		--skipInDevelopment
+
+		# Installing packages
+		mkdir node_modules.nosync; ln -s node_modules.nosync node_modules; yarn
+		--skipInDevelopment
+
+		# Opening project folder in Visual Studio Code
+		open . -a Visual\\ Studio\\ Code\\ -\\ Insiders
+		--skipInDevelopment
+		`
+		this.commands = this.getCommandsArrayFromString(commandsString)
 	}
-	updatePackageJSON(projectName: string): void {
+	updatePackageJSON(): void {
 		const file = editJsonFile(path.join(this.projectDirectory, 'package.json'))
-		file.set('name', projectName)
+		file.set('name', this.projectName)
 		file.set('version', '0.0.1')
-		file.set('repository', `git@github.com:mattdanielmurphy/${projectName}.git`)
+		file.set(
+			'repository',
+			`git@github.com:mattdanielmurphy/${this.projectName}.git`,
+		)
 		file.save()
 	}
 	async execute(): Promise<void> {
 		let lastCommandFailed = false
-
 		for (let i = 0; i < this.commands.length; i++) {
-			const { message, command, options = {}, fn } = this.commands[i]
+			const { description, commandString, fn, options = {} } = this.commands[i]
 
 			if (lastCommandFailed) return
 
-			console.log(`[${i + 1}/${this.commands.length}] ${message}...`) // [1/7] Cloning Repo...
+			console.log(`[${i + 1}/${this.commands.length}] ${description}...`) // [1/7] Cloning Repo...
 			if (fn) {
 				try {
 					fn()
@@ -91,8 +118,10 @@ export class Project {
 					console.log(error)
 					lastCommandFailed = true
 				}
-			} else {
-				await this.executeShellCommand(command || '', options).catch(
+			} else if (commandString) {
+				console.log(commandString)
+
+				await this.executeShellCommand(commandString, options).catch(
 					() => (lastCommandFailed = true),
 				)
 			}
@@ -101,3 +130,5 @@ export class Project {
 		console.log('All done!')
 	}
 }
+
+new Project('PROJECT NAME').execute()

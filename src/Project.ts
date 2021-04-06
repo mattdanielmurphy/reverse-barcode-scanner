@@ -4,23 +4,30 @@ import editJsonFile = require('edit-json-file')
 
 import * as path from 'path'
 
-import { exec } from 'child_process'
+import { Command, ShellCommandOptions } from './interfaces'
 
-interface ShellCommandOptions {
-	cwd?: string
-	verboseMode?: boolean
-	skipInDevelopment?: boolean
-}
+import { Shell } from './utils'
 
 export class Project {
 	projectDirectory: string
 	developmentMode: boolean
-	constructor(projectName: string, developmentMode = false) {
-		this.developmentMode = developmentMode
-		const workingDirectory = path.resolve(__dirname, '../..')
-		this.projectDirectory = path.resolve(workingDirectory, projectName)
+	commands: Command[]
 
-		const commands = [
+	executeShellCommand: (
+		command: string,
+		options?: ShellCommandOptions,
+	) => Promise<string | Buffer>
+
+	constructor(projectName: string, developmentMode = false) {
+		const workingDirectory = path.resolve(__dirname, '../..')
+		this.developmentMode = developmentMode
+		this.projectDirectory = path.resolve(workingDirectory, projectName)
+		const shell = new Shell(this.projectDirectory, {
+			developmentMode,
+		})
+		this.executeShellCommand = shell.executeShellCommand
+
+		this.commands = [
 			{
 				message: `Cloning repo into folder '${projectName}'`,
 				command: `gh repo clone mattdanielmurphy/create-node-project ${projectName}`,
@@ -57,11 +64,9 @@ export class Project {
 			{
 				message: 'Opening project folder in Visual Studio Code',
 				command: 'open . -a Visual\\ Studio\\ Code\\ -\\ Insiders',
+				options: { skipInDevelopment: true },
 			},
 		]
-
-		console.log('All done!')
-		this.executeListOfShellCommands(commands)
 	}
 	updatePackageJSON(projectName: string): void {
 		const file = editJsonFile(path.join(this.projectDirectory, 'package.json'))
@@ -70,25 +75,15 @@ export class Project {
 		file.set('repository', `git@github.com:mattdanielmurphy/${projectName}.git`)
 		file.save()
 	}
-	async executeListOfShellCommands(
-		commands: {
-			message: string
-			command?: string
-			fn?: () => void
-			options?: ShellCommandOptions
-		}[],
-		options?: ShellCommandOptions,
-	): Promise<void> {
-		const optionsForAllCommands = options || {}
+	async execute(): Promise<void> {
 		let lastCommandFailed = false
 
-		for (let i = 0; i < commands.length; i++) {
-			const { message, command, options = {}, fn } = commands[i]
-			Object.assign(options, optionsForAllCommands)
+		for (let i = 0; i < this.commands.length; i++) {
+			const { message, command, options = {}, fn } = this.commands[i]
 
 			if (lastCommandFailed) return
 
-			console.log(`[${i + 1}/${commands.length}] ${message}...`) // [1/7] Cloning Repo...
+			console.log(`[${i + 1}/${this.commands.length}] ${message}...`) // [1/7] Cloning Repo...
 			if (fn) {
 				try {
 					fn()
@@ -102,43 +97,7 @@ export class Project {
 				)
 			}
 		}
-	}
-	async executeShellCommand(
-		command: string,
-		options: ShellCommandOptions = {},
-	): Promise<string | Buffer> {
-		if (options.skipInDevelopment && this.developmentMode) {
-			console.log('(skipped in development)')
-			return 'skipped in development'
-		}
-		let verboseMode: boolean
-		if (options.verboseMode) {
-			delete options.verboseMode
-			verboseMode = true
-		}
 
-		options = {
-			cwd: this.projectDirectory,
-			...options,
-		}
-
-		return new Promise((resolve, reject) => {
-			exec(
-				command,
-				options,
-				(
-					error: Error | null,
-					stdout: string | Buffer,
-					stderr: string | Buffer,
-				) => {
-					if (error) {
-						console.log(error)
-						reject(error)
-					}
-					if (verboseMode && stdout) console.log(stdout)
-					resolve(stdout ? stdout : stderr)
-				},
-			)
-		})
+		console.log('All done!')
 	}
 }

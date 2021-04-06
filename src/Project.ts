@@ -4,14 +4,14 @@ import editJsonFile = require('edit-json-file')
 
 import * as path from 'path'
 
-import { Command, ShellCommandOptions } from './interfaces'
+import { ShellCommand, ShellCommandOptions } from './interfaces'
 
 import { Shell } from './utils'
 
 export class Project {
 	projectDirectory: string
 	developmentMode: boolean
-	commands: Command[]
+	commands: ShellCommand[]
 	projectName: string
 
 	executeShellCommand: (
@@ -20,10 +20,10 @@ export class Project {
 	) => Promise<string | Buffer>
 
 	getCommandsArrayFromString(commandsString: string) {
-		const commands: Command[] = []
+		const commands: ShellCommand[] = []
 		commandsString.split(/\n\s*#/).forEach((command) => {
 			if (!command) return
-			const commandParameters: Command = { description: '' }
+			const commandParameters: ShellCommand = { description: '' }
 			command.split('\n').forEach((parameter, i) => {
 				parameter = parameter.trim()
 				if (i === 0) commandParameters.description = parameter

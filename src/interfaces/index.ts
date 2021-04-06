@@ -1,2 +1,2 @@
 export * from './ShellCommandOptions'
-export * from './Command'
+export * from './ShellCommand'

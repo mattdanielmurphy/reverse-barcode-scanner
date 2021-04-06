@@ -130,5 +130,3 @@ export class Project {
 		console.log('All done!')
 	}
 }
-
-new Project('PROJECT NAME').execute()

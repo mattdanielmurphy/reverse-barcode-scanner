@@ -8,7 +8,7 @@
 	"bin": "index.mjs",
 	"scripts": {
 		"lint": "eslint . --ext .ts",
-		"test": "jest"
+		"test": "jest --watch"
 	},
 	"prettier": {
 		"jsxSingleQuote": true,

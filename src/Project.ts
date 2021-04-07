@@ -10,16 +10,14 @@ import { Shell } from './utils'
 
 export class Project {
 	projectDirectory: string
-	developmentMode: boolean
 	commands: ShellCommand[]
-	projectName: string
 
 	executeShellCommand: (
 		command: string,
 		options?: ShellCommandOptions,
 	) => Promise<string | Buffer>
 
-	getCommandsArrayFromString(commandsString: string) {
+	getCommandsArrayFromString(commandsString: string): ShellCommand[] {
 		const commands: ShellCommand[] = []
 		commandsString.split(/\n\s*#/).forEach((command) => {
 			if (!command) return
@@ -44,18 +42,16 @@ export class Project {
 		return commands
 	}
 
-	prettifyName(string: string) {
+	prettifyName(string: string): string {
 		return string
 			.split('-')
 			.map((l) => l.substr(0, 1).toUpperCase() + l.substring(1))
 			.join(' ')
 	}
 
-	constructor(projectName: string, developmentMode = false) {
-		projectName = projectName.replace(' ', '-')
+	constructor(public projectName: string, public developmentMode = false) {
+		this.projectName = projectName.replace(' ', '-')
 		const workingDirectory = path.resolve(__dirname, '../..')
-		this.developmentMode = developmentMode
-		this.projectName = projectName
 		this.projectDirectory = path.resolve(workingDirectory, projectName)
 		const shell = new Shell(this.projectDirectory, {
 			developmentMode,
@@ -67,7 +63,10 @@ export class Project {
 		--cwd ${workingDirectory}
 
 		# Removing installer files
-		rm -r src
+		rm -r src package.json
+
+		# Moving files into root directory
+		mv root/* ./; rm -r root
 
 		# Updating package.json
 		() => this.updatePackageJSON()
@@ -96,7 +95,6 @@ export class Project {
 	updatePackageJSON(): void {
 		const file = editJsonFile(path.join(this.projectDirectory, 'package.json'))
 		file.set('name', this.projectName)
-		file.set('version', '0.0.1')
 		file.set(
 			'repository',
 			`git@github.com:mattdanielmurphy/${this.projectName}.git`,

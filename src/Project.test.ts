@@ -1,26 +1,37 @@
 import { Project } from './Project'
 import { exec } from 'child_process'
 
-test('should create project', async () => {
+describe('should create project', () => {
 	removeTestProjectFolder()
 	const projectName = 'create-node-project-test'
 	const project = new Project(projectName, true)
-	await project.execute()
+	it('should create project folder in ~/Projects', async () => {
+		await project.execute().catch((err) => {
+			console.log('ERROR', err)
+			removeTestProjectFolder()
+		})
+		const projects = await projectsInProjectDirectory()
+		expect(projects).toContain(projectName)
+	})
 })
 
 //
 // * functions ------------------------------------------------------------------------
 
-function removeTestProjectFolder() {
-	exec('rm -rf ~/Projects/create-node-project-test', (err, stdout, stderr) => {
-		if (err) {
-			console.log(err)
-		}
-		if (stderr) {
-			console.log(stderr)
-		}
-		if (stdout) {
-			console.log(stdout)
-		}
+async function executeCommand(commandString: string): Promise<string> {
+	return await new Promise<string>((resolve, reject) => {
+		exec(commandString, (err, stdout, stderr) => {
+			if (err || stderr) reject(err || stderr)
+			if (stdout) resolve(stdout)
+		})
 	})
+}
+
+function removeTestProjectFolder() {
+	executeCommand('rm -rf ~/Projects/create-node-project-test')
+}
+
+async function projectsInProjectDirectory() {
+	const projects = await executeCommand('ls ~/Projects')
+	return projects.split('\n')
 }

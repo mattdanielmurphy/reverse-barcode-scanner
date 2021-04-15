@@ -10,6 +10,7 @@ export class Shell {
 	) {
 		this.projectDirectory = projectDirectory
 		this.developmentMode = options.developmentMode
+		console.log('development mode:', this.developmentMode)
 	}
 
 	async executeShellCommand(
@@ -42,7 +43,7 @@ export class Shell {
 					stderr: string | Buffer,
 				) => {
 					if (error) {
-						console.log(error)
+						console.log(error, stdout || stderr || '')
 						reject(error)
 					}
 					if (verboseMode && stdout) console.log(stdout)

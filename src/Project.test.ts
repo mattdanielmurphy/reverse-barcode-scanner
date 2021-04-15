@@ -1,6 +1,8 @@
 import { Project } from './Project'
 import { exec } from 'child_process'
 
+jest.setTimeout(15000)
+
 describe('should create project', () => {
 	removeTestProjectFolder()
 	const projectName = 'create-node-project-test'

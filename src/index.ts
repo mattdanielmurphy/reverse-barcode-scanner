@@ -1,8 +1,5 @@
 import { Project } from './Project'
 
-//
-// * FUNCTIONS
-
 function getProjectNameFromParameters(): string {
 	// $ create-node-project [name of project with spaces]
 	const projectName = process.argv.slice(2).join(' ') // name-of-project-with-spaces
@@ -11,12 +8,10 @@ function getProjectNameFromParameters(): string {
 		return projectName
 	} else
 		throw new Error(
-			'Please provide a project name:\n\tcreate-node-project [directory] [project-name]',
+			'Please provide a project name:\n\tcreate-node-project [project-name]',
 		)
 }
 
-//
-// * PROGRAM START
-
 const projectName = getProjectNameFromParameters()
-new Project(projectName)
+const project = new Project(projectName)
+project.execute()

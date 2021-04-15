@@ -1,8 +1,0 @@
-//
-// * IMPORTS
-
-//
-// * PROGRAM
-
-//
-// * FUNCTIONS

@@ -1,5 +1,3 @@
-//
-// * IMPORTS
 import editJsonFile = require('edit-json-file')
 
 import * as path from 'path'
@@ -16,31 +14,6 @@ export class Project {
 		command: string,
 		options?: ShellCommandOptions,
 	) => Promise<string | Buffer>
-
-	getCommandsArrayFromString(commandsString: string): ShellCommand[] {
-		const commands: ShellCommand[] = []
-		commandsString.split(/\n\s*#/).forEach((command) => {
-			if (!command) return
-			const commandParameters: ShellCommand = { description: '' }
-			command.split('\n').forEach((parameter, i) => {
-				parameter = parameter.trim()
-				if (i === 0) commandParameters.description = parameter
-				if (i === 1) {
-					if (parameter.substr(0, 2) === '()') {
-						commandParameters.fn = eval(parameter)
-					} else commandParameters.commandString = parameter
-				}
-				if (i === 2) {
-					const [key, value] = parameter.split(' ')
-					if (key === '--cwd') commandParameters.options = { cwd: value }
-					else if (key === '--skipInDevelopment')
-						commandParameters.options = { skipInDevelopment: true }
-				}
-			})
-			commands.push(commandParameters)
-		})
-		return commands
-	}
 
 	prettifyName(string: string): string {
 		return string
@@ -101,6 +74,33 @@ export class Project {
 		)
 		file.save()
 	}
+	getCommandsArrayFromString(commandsString: string): ShellCommand[] {
+		const commands: ShellCommand[] = []
+		commandsString.split(/\n\s*#/).forEach((command) => {
+			if (!command) return
+			const commandParameters: ShellCommand = { description: '' }
+			command.split('\n').forEach((parameter, i) => {
+				parameter = parameter.trim()
+				if (i === 0) commandParameters.description = parameter
+				if (i === 1) {
+					if (parameter.substr(0, 2) === '()') {
+						const fn = parameter.split('=> ')[1]
+						console.log(fn)
+						commandParameters.fn = () => eval(fn)
+					} else commandParameters.commandString = parameter
+				}
+				if (i === 2) {
+					const [key, value] = parameter.split(' ')
+					if (key === '--cwd') commandParameters.options = { cwd: value }
+					else if (key === '--skipInDevelopment')
+						commandParameters.options = { skipInDevelopment: true }
+				}
+			})
+			commands.push(commandParameters)
+		})
+		return commands
+	}
+
 	async execute(): Promise<void> {
 		let lastCommandFailed = false
 		for (let i = 0; i < this.commands.length; i++) {
@@ -117,8 +117,6 @@ export class Project {
 					lastCommandFailed = true
 				}
 			} else if (commandString) {
-				console.log(commandString)
-
 				await this.executeShellCommand(commandString, options).catch(
 					() => (lastCommandFailed = true),
 				)
